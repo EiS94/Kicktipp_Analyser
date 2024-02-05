@@ -1,4 +1,5 @@
 import KicktippParser
+import Utils
 
 community_name = input("Für welche Tipprunde sollen die Punkte mit anderen Regeln berechnet werden?\n")
 print("\nFestlegung der Punkteregeln:")
@@ -37,5 +38,8 @@ season = KicktippParser.parse_season(community_name, ruleset)
 
 print("Pretty print results with given ruleset\n")
 print(season.pretty_print())
+
+Utils.create_image_from_text(season.pretty_print())
+print("Summary is also saved to summary.png")
 
 input("\nZum Beenden Enter drücken.")
