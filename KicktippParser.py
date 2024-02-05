@@ -8,20 +8,20 @@ from Bet import Bet
 from Matchday import Matchday
 from Player import Player
 from Result import Result
-from Saison import Saison
+from Season import Season
 
 
-def parse_saison(community_name, ruleset=None):
+def parse_season(community_name, ruleset=None):
     if ruleset is None:
         ruleset = get_default_ruleset()
 
-    saison = Saison()
+    season = Season()
     for i in tqdm.tqdm(range(1, 35)):
-        saison.add_matchday(parse_matchday(community_name, i, ruleset))
+        season.add_matchday(parse_matchday(community_name, i, ruleset))
 
-    saison.players.sort(key=lambda x: x.get_total_saison_points(), reverse=True)
+    season.players.sort(key=lambda x: x.get_total_saison_points(), reverse=True)
 
-    return saison
+    return season
 
 
 def parse_matchday(community_name, matchday_number, ruleset=None):
@@ -53,12 +53,14 @@ def parse_matchday(community_name, matchday_number, ruleset=None):
 
             if home_name != "" and away_name != "":
                 # get goals
-                home_goals = int(row.find("span", {"class": {"kicktipp-heim"}}).encode_contents().decode())
-                away_goals = int(row.find("span", {"class": {"kicktipp-gast"}}).encode_contents().decode())
-
-                # add result to the results list
-                results.append(Result(home_name, away_name, home_goals, away_goals))
-
+                try:
+                    home_goals = int(row.find("span", {"class": {"kicktipp-heim"}}).encode_contents().decode())
+                    away_goals = int(row.find("span", {"class": {"kicktipp-gast"}}).encode_contents().decode())
+                    # add result to the results list
+                    results.append(Result(home_name, away_name, home_goals, away_goals))
+                except ValueError:
+                    # this Error can occur if a match of the matchday is not already played
+                    continue
         # get players with bets
         players = []
 
@@ -70,11 +72,14 @@ def parse_matchday(community_name, matchday_number, ruleset=None):
             else:
                 continue
             player_bets = row.findAll("td", {"class": re.compile("nw . ereignis ereignis\\d")})
-            player_bets_list = [Bet(-1, -1) for i in range(9)]
+            player_bets_list = [Bet(-1, -1) for _ in range(9)]
             for result in player_bets:
-                bet_string = re.match(r"\d{1,2}:\d{1,2}", result.encode_contents().decode()).group().split(":")
-                match_number = int(re.search(r"nw . ereignis ereignis(\d)", result.__str__()).group(1))
-                player_bets_list[match_number] = (Bet(int(bet_string[0]), int(bet_string[1])))
+                try:
+                    bet_string = re.match(r"\d{1,2}:\d{1,2}", result.encode_contents().decode()).group().split(":")
+                    match_number = int(re.search(r"nw . ereignis ereignis(\d)", result.__str__()).group(1))
+                    player_bets_list[match_number] = (Bet(int(bet_string[0]), int(bet_string[1])))
+                except AttributeError:
+                    continue
 
             player = Player(player_name)
             player.bets = player_bets_list

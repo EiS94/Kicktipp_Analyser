@@ -1,4 +1,4 @@
-class Saison:
+class Season:
 
     def __init__(self):
         self.matchdays = []

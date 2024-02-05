@@ -33,7 +33,9 @@ ruleset = {
 
 print("\nStarting analyzing community...")
 print("Load results and bets for all matchdays...")
-saison = KicktippParser.parse_saison(community_name)
+season = KicktippParser.parse_season(community_name, ruleset)
 
 print("Pretty print results with given ruleset\n")
-print(saison.pretty_print())
+print(season.pretty_print())
+
+input("\nZum Beenden Enter drücken.")
